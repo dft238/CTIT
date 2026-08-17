@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#4F46E5">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="CTIT">
+    <title>CTIT 时间投资计算器</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">⏱</span>
+                    <div>
+                        <h1>CTIT</h1>
+                        <p class="subtitle">时间投资计算器 · v2</p>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <span class="engine-badge" id="engineBadge">本地引擎</span>
+                    <button class="theme-toggle" id="themeToggle" title="切换主题">🌙</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="tab-bar">
+            <button class="tab active" data-tab="tasks">
+                <span class="tab-icon">📋</span>
+                <span class="tab-label">事务</span>
+            </button>
+            <button class="tab" data-tab="report">
+                <span class="tab-icon">📊</span>
+                <span class="tab-label">报告</span>
+            </button>
+            <button class="tab" data-tab="settings">
+                <span class="tab-icon">⚙</span>
+                <span class="tab-label">设置</span>
+            </button>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="content">
+            <!-- Tasks View -->
+            <section class="view active" id="view-tasks">
+                <!-- Engine Indicator -->
+                <div class="engine-banner" id="engineBanner">
+                    <div class="engine-info">
+                        <span class="engine-icon" id="engineIcon">📱</span>
+                        <div>
+                            <div class="engine-title" id="engineTitle">本地估算引擎</div>
+                            <div class="engine-desc" id="engineDesc">无需API，离线运行，即输即算</div>
+                        </div>
+                    </div>
+                    <button class="engine-switch-btn" id="engineSwitchBtn">切换</button>
+                </div>
+
+                <!-- Input Area -->
+                <div class="input-section">
+                    <div class="input-card">
+                        <label class="input-label">输入事务描述</label>
+                        <textarea id="taskInput" placeholder="每行输入一个事务，例如：&#10;写完论文第三章（周五前交）&#10;回复导师邮件&#10;准备周四的组会汇报&#10;学习React新文档" rows="5"></textarea>
+                        <div class="analyze-row">
+                            <button class="btn-primary" id="analyzeBtn">
+                                <span>分析事务参数</span>
+                            </button>
+                        </div>
+                        <div class="mode-hint" id="modeHint">本地模式：即时返回，无需网络</div>
+                    </div>
+                </div>
+
+                <!-- Loading State -->
+                <div class="loading hidden" id="loading">
+                    <div class="spinner"></div>
+                    <p>正在分析事务参数...</p>
+                </div>
+
+                <!-- PID Status Badge -->
+                <div class="pid-badge hidden" id="pidBadge">
+                    <span class="pid-icon">🔧</span>
+                    <span>已校准偏置：<strong id="biasValue">0%</strong></span>
+                    <span class="pid-tasks">（基于 <strong id="pidCount">0</strong> 次完成记录）</span>
+                </div>
+
+                <!-- Task List -->
+                <div class="task-list" id="taskList">
+                    <!-- Tasks will be rendered here -->
+                </div>
+
+                <!-- Action Bar -->
+                <div class="action-bar hidden" id="actionBar">
+                    <button class="btn-secondary" id="refreshBtn">↻ 刷新排序</button>
+                    <button class="btn-secondary" id="clearBtn">清空全部</button>
+                </div>
+
+                <!-- Disclaimer -->
+                <div class="disclaimer">
+                    <p>⚠️ 本事务清单暂时仅用于实验目的，生成内容仅供参考，请勿用于其他用途或外传。</p>
+                </div>
+            </section>
+
+            <!-- Report View -->
+            <section class="view" id="view-report">
+                <div class="report-section">
+                    <div class="report-card">
+                        <h2>📊 时间投资分析报告</h2>
+                        <p class="report-desc">基于你的事务完成记录，生成个性化分析报告，包括预估准确性、完成率和优化建议。</p>
+
+                        <div class="report-stats" id="reportStats">
+                            <!-- Stats will be shown here -->
+                        </div>
+
+                        <div class="report-engine-note" id="reportEngineNote">
+                            <span>📱 本地报告生成器：基于模板分析，无需联网</span>
+                        </div>
+
+                        <div class="consent-box hidden" id="consentBox">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="reportConsent">
+                                <span>我同意将事务数据发送给云端大模型生成报告</span>
+                            </label>
+                        </div>
+
+                        <button class="btn-primary" id="generateReportBtn" disabled>生成报告</button>
+                    </div>
+
+                    <div class="report-output hidden" id="reportOutput">
+                        <!-- Report content -->
+                    </div>
+
+                    <div class="disclaimer">
+                        <p id="reportDisclaimer">⚠️ 报告由本地分析引擎生成，仅供参考。数据不会离开本设备。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Settings View -->
+            <section class="view" id="view-settings">
+                <div class="settings-section">
+                    <!-- Engine Selection -->
+                    <div class="settings-card">
+                        <h2>分析引擎</h2>
+                        <div class="engine-selector">
+                            <div class="engine-option" id="engineOptLocal">
+                                <div class="engine-option-header">
+                                    <span class="engine-option-icon">📱</span>
+                                    <div>
+                                        <div class="engine-option-title">本地估算引擎</div>
+                                        <div class="engine-option-desc">内置NLP分析，无需网络，即时返回</div>
+                                    </div>
+                                </div>
+                                <div class="engine-option-features">
+                                    <span class="feature-tag">离线可用</span>
+                                    <span class="feature-tag">无需配置</span>
+                                    <span class="feature-tag">隐私保护</span>
+                                </div>
+                            </div>
+                            <div class="engine-option" id="engineOptCloud">
+                                <div class="engine-option-header">
+                                    <span class="engine-option-icon">☁️</span>
+                                    <div>
+                                        <div class="engine-option-title">云端大模型</div>
+                                        <div class="engine-option-desc">DeepSeek/GLM等云端模型，分析更深</div>
+                                    </div>
+                                </div>
+                                <div class="engine-option-features">
+                                    <span class="feature-tag">需要API Key</span>
+                                    <span class="feature-tag">需要网络</span>
+                                    <span class="feature-tag">智能报告</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="settings-card hidden" id="cloudSettings">
+                        <h2>API 配置</h2>
+                        <div class="setting-item">
+                            <label>API 地址</label>
+                            <input type="text" id="apiUrl" placeholder="https://open.bigmodel.cn/api/paas/v4/chat/completions">
+                            <p class="hint">默认为智谱AI API，也兼容OpenAI格式</p>
+                        </div>
+                        <div class="setting-item">
+                            <label>API Key</label>
+                            <input type="password" id="apiKey" placeholder="输入你的API Key">
+                        </div>
+                        <div class="setting-item">
+                            <label>模型名称</label>
+                            <input type="text" id="modelName" placeholder="glm-4-flash">
+                            <div class="preset-row">
+                                <button class="preset-btn" data-api="zhipu" data-url="https://open.bigmodel.cn/api/paas/v4/chat/completions" data-model="glm-4-flash">智谱 GLM-4-Flash</button>
+                                <button class="preset-btn" data-api="deepseek" data-url="https://api.deepseek.com/v1/chat/completions" data-model="deepseek-v4-flash">DeepSeek V4 Flash</button>
+                                <button class="preset-btn" data-api="deepseek-reasoner" data-url="https://api.deepseek.com/v1/chat/completions" data-model="deepseek-v4-reasoner">DeepSeek V4 Reasoner</button>
+                            </div>
+                            <p class="hint">DeepSeek V4 Flash（原deepseek-chat，2026年7月合并后统一名称）</p>
+                        </div>
+                        <button class="btn-primary" id="saveSettingsBtn">保存配置</button>
+                        <div class="save-status hidden" id="saveStatus">✓ 已保存</div>
+                    </div>
+
+                    <div class="settings-card">
+                        <h2>PID 校准参数</h2>
+                        <div class="setting-item">
+                            <label>比例增益 K<sub>p</sub></label>
+                            <input type="number" id="kpInput" step="0.1" value="0.5">
+                        </div>
+                        <div class="setting-item">
+                            <label>积分增益 K<sub>i</sub></label>
+                            <input type="number" id="kiInput" step="0.05" value="0.15">
+                        </div>
+                        <div class="setting-item">
+                            <label>综合优先级权重 α（执行效率维度）</label>
+                            <input type="number" id="alphaInput" step="0.1" value="0.0">
+                            <p class="hint">α=0 时仅按紧急度排序，α=1 时效率与紧急度并重</p>
+                        </div>
+                        <div class="setting-item">
+                            <label>综合优先级权重 β（紧急度维度）</label>
+                            <input type="number" id="betaInput" step="0.1" value="1.0">
+                        </div>
+                        <button class="btn-secondary" id="savePidBtn">保存校准参数</button>
+                    </div>
+
+                    <div class="settings-card">
+                        <h2>数据管理</h2>
+                        <div class="data-stats" id="dataStats">
+                            <!-- Stats -->
+                        </div>
+                        <div class="data-version">
+                            <span class="version-tag">v2.0</span>
+                            <span class="version-info">支持本地引擎 · 数据向后兼容</span>
+                        </div>
+                        <button class="btn-secondary" id="exportBtn">导出数据 (JSON)</button>
+                        <button class="btn-danger" id="resetBtn">重置所有数据</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Task Detail Modal -->
+        <div class="modal-overlay hidden" id="taskModal">
+            <div class="modal">
+                <div class="modal-header">
+                    <h3 id="modalTitle">调整事务参数</h3>
+                    <button class="modal-close" id="modalClose">✕</button>
+                </div>
+                <div class="modal-body" id="modalBody">
+                    <!-- Content -->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="modalCancel">取消</button>
+                    <button class="btn-primary" id="modalSave">保存</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Completion Modal -->
+        <div class="modal-overlay hidden" id="completeModal">
+            <div class="modal modal-small">
+                <div class="modal-header">
+                    <h3>记录完成</h3>
+                </div>
+                <div class="modal-body">
+                    <p id="completeTaskName" class="complete-task-name"></p>
+                    <div class="setting-item">
+                        <label>实际影响时间（小时）</label>
+                        <input type="number" id="actualImpact" step="0.5" min="0">
+                        <p class="hint">用于PID校准，记录完成后请输入实际产生的影响时间</p>
+                    </div>
+                    <div class="setting-item">
+                        <label>实际执行耗时（小时）</label>
+                        <input type="number" id="actualCost" step="0.5" min="0">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="completeCancel">取消</button>
+                    <button class="btn-primary" id="completeConfirm">确认完成</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Engine Switch Toast Modal -->
+        <div class="modal-overlay hidden" id="engineSwitchModal">
+            <div class="modal modal-small">
+                <div class="modal-header">
+                    <h3>选择分析引擎</h3>
+                </div>
+                <div class="modal-body">
+                    <div class="engine-choice-list">
+                        <div class="engine-choice" data-engine="local">
+                            <span class="engine-choice-icon">📱</span>
+                            <div>
+                                <div class="engine-choice-title">本地估算引擎</div>
+                                <div class="engine-choice-desc">离线运行，无需API，即时返回</div>
+                            </div>
+                        </div>
+                        <div class="engine-choice" data-engine="cloud">
+                            <span class="engine-choice-icon">☁️</span>
+                            <div>
+                                <div class="engine-choice-title">云端大模型</div>
+                                <div class="engine-choice-desc">需要API Key和网络，分析更深</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn-secondary" id="engineSwitchCancel">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast -->
+        <div class="toast hidden" id="toast"></div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
