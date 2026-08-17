@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+
+# Node
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 构建产物（APK 等二进制不进入源码仓库）
+*.apk
+dist/
+build/
+
+# 本地运行生成（results/ 默认提交以支撑复现；如需重新生成可取消下行注释）
+# sim/results/
