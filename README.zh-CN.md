@@ -4,6 +4,8 @@
 
 > 核心公式：`优先级 P = T_impact / T_remain`，并用 PI 控制器自动校准主观高估 / 低估。
 
+> **▶ [在线演示](https://ctit.dengfengting238.workers.dev/)** — 浏览器直接体验，无需安装。
+
 🌐 [English](README.md)
 
 ---
