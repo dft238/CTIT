@@ -4,6 +4,8 @@
 
 > Core formula: `Priority P = T_impact / T_remain`, with PI-controller bias calibration.
 
+> **▶ [Live Demo](https://ctit.dengfengting238.workers.dev/)** — try it in your browser, no install needed.
+
 🌐 [中文文档](README.zh-CN.md)
 
 ---
