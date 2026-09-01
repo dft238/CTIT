@@ -28,8 +28,8 @@
 
 | Method | Mean total impact | Improvement |
 |--------|-------------------|-------------|
-| Random | 2,224 h | — |
-| Eisenhower quadrant | 20,774 h | +834% vs random |
+| Random | 2,437 h | — |
+| Eisenhower quadrant | 20,774 h | +752% vs random |
 | **TROI ranking** | **31,514 h** | **+51.7% vs quadrant** (d=0.946, p=5.25×10⁻¹⁴¹) |
 
 ### Experiment 2 — PI eliminates bias; P-only leaves steady-state error
