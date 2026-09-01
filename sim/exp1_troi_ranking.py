@@ -61,10 +61,12 @@ def generate_tasks(n=N_TASKS, seed=SEED):
 # ============================================================
 # 排序方法
 # ============================================================
-def random_select(tasks, budget=T_BUDGET):
+def random_select(tasks, budget=T_BUDGET, rng=None):
     """随机排序，贪心选择直到预算耗尽。"""
     n = len(tasks["t_cost_true"])
-    order = np.random.permutation(n)
+    if rng is None:
+        rng = np.random.default_rng(SEED)  # 可复现：默认固定种子
+    order = rng.permutation(n)
     return greedy_select(tasks, order, budget)
 
 
@@ -147,7 +149,7 @@ def run_main_experiment():
     for rep in range(N_REPS):
         tasks = generate_tasks(n=N_TASKS, seed=SEED + rep)
 
-        r_rand = random_select(tasks)
+        r_rand = random_select(tasks, rng=np.random.default_rng(SEED + rep))
         r_quad = quadrant_select(tasks)
         r_troi = troi_select(tasks)
 
